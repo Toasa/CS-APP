@@ -35,8 +35,10 @@ int main() {
     }
 
     // The only normal termination is if there are no more children
-    if (errno != ECHILD)
+    if (errno != ECHILD) {
         fprintf(stderr, "waitpid error");
+        exit(1);
+    }
 
     exit(0);
 }
