@@ -57,6 +57,8 @@ void eval(char *cmdline) {
     pid_t pid;
     if (!builtin_command(argv)) {
         if ((pid = fork()) == 0) { // Child runs user job
+            // Make process group ID for the job the same as PID of child
+            setpgid(getpid(), getpid());
             if (execve(argv[0], argv, environ) < 0) {
                 printf("%s: Command not found.\n", argv[0]);
                 exit(0);
