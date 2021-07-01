@@ -9,6 +9,12 @@
 #define MAXARGS 128
 
 extern char **environ;
+pid_t pid;
+
+void handler(int sig) {
+    if (sig == SIGINT)
+        killpg(pid, sig);
+}
 
 int parseline(char *buf, char **argv) {
     buf[strlen(buf)-1] = ' '; // Replace trailing '\n' with space
@@ -54,9 +60,9 @@ void eval(char *cmdline) {
     if (argv[0] == NULL)
         return; // Ignore empty lines
 
-    pid_t pid;
     if (!builtin_command(argv)) {
         if ((pid = fork()) == 0) { // Child runs user job
+
             // Make process group ID for the job the same as PID of child
             setpgid(getpid(), getpid());
             if (execve(argv[0], argv, environ) < 0) {
@@ -80,6 +86,7 @@ void eval(char *cmdline) {
 
 int main() {
     char cmdline[MAXLINE];
+    signal(SIGINT, handler);
 
     while (1) {
         // Read
