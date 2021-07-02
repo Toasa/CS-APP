@@ -12,7 +12,7 @@ extern char **environ;
 pid_t pid;
 
 void handler(int sig) {
-    if (sig == SIGINT)
+    if (sig == SIGINT || sig == SIGTSTP)
         killpg(pid, sig);
 }
 
@@ -74,7 +74,7 @@ void eval(char *cmdline) {
         // Parent waits for foreground job to terminate
         if (!bg) {
             int status;
-            if (waitpid(pid, &status, 0) < 0) {
+            if (waitpid(pid, &status, WUNTRACED) < 0) {
                 fprintf(stderr, "waitfg: waitpid error");
                 exit(1);
             }
@@ -87,6 +87,7 @@ void eval(char *cmdline) {
 int main() {
     char cmdline[MAXLINE];
     signal(SIGINT, handler);
+    signal(SIGTSTP, handler);
 
     while (1) {
         // Read
