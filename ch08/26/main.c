@@ -16,11 +16,18 @@ struct Job {
 extern char **environ;
 static struct Job fg_job;
 
-void create_new_fg_job(pid_t pid) {
+struct Job create_new_job(pid_t pid) {
     static int jid = 0;
 
-    fg_job.pid = pid;
-    fg_job.jid = jid++;
+    struct Job j =  {
+        .pid = pid,
+        .jid = jid++,
+    };
+    return j;
+}
+
+void create_new_fg_job(pid_t pid) {
+    fg_job = create_new_job(pid);
 }
 
 pid_t get_fg_pid() {
