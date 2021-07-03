@@ -11,24 +11,34 @@
 struct Job {
     int jid; // Job id
     int pid; // Process id
+
+    char *cmd;
 };
 
 extern char **environ;
 static struct Job fg_job;
 static struct Job bg_job;
 
-struct Job create_new_job(pid_t pid) {
+struct Job create_new_job(pid_t pid, char *cmd) {
     static int jid = 0;
 
     struct Job j =  {
         .pid = pid,
         .jid = jid++,
+        .cmd = cmd,
     };
     return j;
 }
 
 pid_t get_fg_pid() {
     return fg_job.pid;
+}
+
+char *copy_cmd(char *cmd) {
+    int len = strlen(cmd);
+    char *c = calloc(1, len);
+    strcpy(c, cmd);
+    return c;
 }
 
 void handler(int sig) {
@@ -76,6 +86,7 @@ int builtin_command(char **argv) {
     if (!strcmp(argv[0], "jobs")) {
         // TODO: List all background jobs
         printf("bg_job jid: %d, pid: %d\n", bg_job.jid, bg_job.pid);
+        printf("[%d] %d %s", job.jid, job.pid, cmdline);
         return 1;
     }
     if (!strcmp(argv[0], "bg")) {
@@ -122,7 +133,7 @@ void eval(char *cmdline) {
         }
     }
 
-    struct Job job = create_new_job(pid);
+    struct Job job = create_new_job(pid, copy_cmd(cmdline));
 
     int status;
     // Parent waits for foreground job to terminate
