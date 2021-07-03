@@ -32,8 +32,14 @@ pid_t get_fg_pid() {
 }
 
 void handler(int sig) {
-    if (sig == SIGINT || sig == SIGTSTP)
-        killpg(fg_job.pid, sig);
+    killpg(fg_job.pid, sig);
+    printf("Job %d terminated by signal: ", fg_job.pid);
+    if (sig == SIGINT)
+        printf("Interrupt\n");
+    else if (sig == SIGTSTP)
+        printf("Stopped\n");
+    else if (sig == SIGKILL)
+        printf("Terminated\n");
 }
 
 int parseline(char *buf, char **argv) {
@@ -129,14 +135,17 @@ void eval(char *cmdline) {
     }
 
     // Background job
-    if (bg || WIFSTOPPED(status))
+    if (bg || WIFSTOPPED(status)) {
         bg_job = job;
+        printf("[%d] %d %s", job.jid, job.pid, cmdline);
+    }
 }
 
 int main() {
     char cmdline[MAXLINE];
     signal(SIGINT, handler);
     signal(SIGTSTP, handler);
+    signal(SIGKILL, handler);
 
     while (1) {
         // Read
