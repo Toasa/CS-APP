@@ -8,12 +8,28 @@
 #define MAXLINE 8192
 #define MAXARGS 128
 
+struct Job {
+    int jid; // Job id
+    int pid; // Process id
+};
+
 extern char **environ;
-pid_t pid;
+static struct Job fg_job;
+
+void create_new_fg_job(pid_t pid) {
+    static int jid = 0;
+
+    fg_job.pid = pid;
+    fg_job.jid = jid++;
+}
+
+pid_t get_fg_pid() {
+    return fg_job.pid;
+}
 
 void handler(int sig) {
     if (sig == SIGINT || sig == SIGTSTP)
-        killpg(pid, sig);
+        killpg(fg_job.pid, sig);
 }
 
 int parseline(char *buf, char **argv) {
@@ -61,6 +77,7 @@ void eval(char *cmdline) {
         return; // Ignore empty lines
 
     if (!builtin_command(argv)) {
+        pid_t pid;
         if ((pid = fork()) == 0) { // Child runs user job
 
             // Make process group ID for the job the same as PID of child
@@ -71,10 +88,12 @@ void eval(char *cmdline) {
             }
         }
 
+        create_new_fg_job(pid);
+
         // Parent waits for foreground job to terminate
         if (!bg) {
             int status;
-            if (waitpid(pid, &status, WUNTRACED) < 0) {
+            if (waitpid(get_fg_pid(), &status, WUNTRACED) < 0) {
                 fprintf(stderr, "waitfg: waitpid error");
                 exit(1);
             }
