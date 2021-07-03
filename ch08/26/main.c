@@ -83,31 +83,31 @@ void eval(char *cmdline) {
     if (argv[0] == NULL)
         return; // Ignore empty lines
 
-    if (!builtin_command(argv)) {
-        pid_t pid;
-        if ((pid = fork()) == 0) { // Child runs user job
+    if (builtin_command(argv))
+        return;
 
-            // Make process group ID for the job the same as PID of child
-            setpgid(getpid(), getpid());
-            if (execve(argv[0], argv, environ) < 0) {
-                printf("%s: Command not found.\n", argv[0]);
-                exit(0);
-            }
+    pid_t pid;
+    if ((pid = fork()) == 0) { // Child runs user job
+
+        // Make process group ID for the job the same as PID of child
+        setpgid(getpid(), getpid());
+        if (execve(argv[0], argv, environ) < 0) {
+            printf("%s: Command not found.\n", argv[0]);
+            exit(0);
         }
-
-        create_new_fg_job(pid);
-
-        // Parent waits for foreground job to terminate
-        if (!bg) {
-            int status;
-            if (waitpid(get_fg_pid(), &status, WUNTRACED) < 0) {
-                fprintf(stderr, "waitfg: waitpid error");
-                exit(1);
-            }
-        } else 
-            printf("%d %s", pid, cmdline);
     }
-    return;
+
+    create_new_fg_job(pid);
+
+    // Parent waits for foreground job to terminate
+    if (!bg) {
+        int status;
+        if (waitpid(get_fg_pid(), &status, WUNTRACED) < 0) {
+            fprintf(stderr, "waitfg: waitpid error");
+            exit(1);
+        }
+    } else
+        printf("%d %s", pid, cmdline);
 }
 
 int main() {
