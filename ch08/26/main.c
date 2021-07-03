@@ -67,6 +67,11 @@ int builtin_command(char **argv) {
         exit(0);
     if (!strcmp(argv[0], "&"))
         return 1;
+    if (!strcmp(argv[0], "jobs")) {
+        // TODO: List all background jobs
+        printf("bg_job jid: %d, pid: %d\n", bg_job.jid, bg_job.pid);
+        return 1;
+    }
     return 0;
 }
 
@@ -107,10 +112,8 @@ void eval(char *cmdline) {
     }
 
     // Background job
-    if (bg || WIFSTOPPED(status)){
+    if (bg || WIFSTOPPED(status))
         bg_job = job;
-        printf("bg_job jid: %d, pid: %d\n", bg_job.jid, bg_job.pid);
-    }
 }
 
 int main() {
