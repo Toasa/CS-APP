@@ -15,6 +15,7 @@ struct Job {
 
 extern char **environ;
 static struct Job fg_job;
+static struct Job bg_job;
 
 struct Job create_new_job(pid_t pid) {
     static int jid = 0;
@@ -24,10 +25,6 @@ struct Job create_new_job(pid_t pid) {
         .jid = jid++,
     };
     return j;
-}
-
-void create_new_fg_job(pid_t pid) {
-    fg_job = create_new_job(pid);
 }
 
 pid_t get_fg_pid() {
@@ -97,17 +94,23 @@ void eval(char *cmdline) {
         }
     }
 
-    create_new_fg_job(pid);
+    struct Job job = create_new_job(pid);
 
+    int status;
     // Parent waits for foreground job to terminate
     if (!bg) {
-        int status;
+        fg_job = job;
         if (waitpid(get_fg_pid(), &status, WUNTRACED) < 0) {
             fprintf(stderr, "waitfg: waitpid error");
             exit(1);
         }
-    } else
-        printf("%d %s", pid, cmdline);
+    }
+
+    // Background job
+    if (bg || WIFSTOPPED(status)){
+        bg_job = job;
+        printf("bg_job jid: %d, pid: %d\n", bg_job.jid, bg_job.pid);
+    }
 }
 
 int main() {
