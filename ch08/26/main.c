@@ -72,6 +72,23 @@ int builtin_command(char **argv) {
         printf("bg_job jid: %d, pid: %d\n", bg_job.jid, bg_job.pid);
         return 1;
     }
+    if (!strcmp(argv[0], "bg")) {
+        if (argv[1] == NULL)
+            return 1;
+
+        int pid;
+        char *p;
+        if ((p = strchr(argv[1], '%')) != NULL) {
+            int jid = atoi(p+1);
+            if (bg_job.jid != jid)
+                return 1;
+            pid = bg_job.pid;
+        } else {
+            pid = atoi(argv[1]);
+        }
+        killpg(pid, SIGCONT);
+        return 1;
+    }
     return 0;
 }
 
