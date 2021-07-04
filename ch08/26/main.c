@@ -77,7 +77,7 @@ int builtin_command(char **argv) {
     return 0;
 }
 
-void eval(char *cmdline) {
+void eval_cmd(char *cmdline) {
     char *argv[MAXARGS]; // Argument list execve()
     char buf[MAXLINE];   // Holds modified command line
     int bg;              // Should the job run in bg or fg?
@@ -121,8 +121,10 @@ void eval(char *cmdline) {
         register_new_bg_job(job);
         printf("[%d] %d %s", job.bg_jid, job.pid, cmdline);
     }
+}
 
-    // TODO: Add this checking in early return
+void eval(char *cmdline) {
+    eval_cmd(cmdline);
     check_exited_bg_jobs();
 }
 

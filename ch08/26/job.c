@@ -42,12 +42,12 @@ void check_exited_bg_jobs() {
         pid_t pid = bg_job.pid;
 
         int status;
-        waitpid(pid, &status, WNOHANG|WUNTRACED);
+        pid_t exited_pid = waitpid(pid, &status, WNOHANG|WUNTRACED);
 
         if (!bg_jobs_used[i])
             continue;
 
-        if (WIFEXITED(status)) {
+        if (pid == exited_pid && WIFEXITED(status)) {
             set_state(&bg_job, Stopped);
             bg_jobs_used[i] = false;
         }
