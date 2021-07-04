@@ -38,14 +38,14 @@ int register_new_bg_job(struct Job j) {
 
 void check_exited_bg_jobs() {
     for (int i = 0; i < MAX_BG_JOB; i++) {
+        if (!bg_jobs_used[i])
+            continue;
+
         struct Job bg_job = bg_jobs[i];
         pid_t pid = bg_job.pid;
 
         int status;
         pid_t exited_pid = waitpid(pid, &status, WNOHANG|WUNTRACED);
-
-        if (!bg_jobs_used[i])
-            continue;
 
         if (pid == exited_pid && WIFEXITED(status)) {
             set_state(&bg_job, Stopped);
