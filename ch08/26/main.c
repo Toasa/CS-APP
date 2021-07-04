@@ -50,18 +50,28 @@ int parseline(char *buf, char **argv) {
     return bg;
 }
 
-int builtin_command(char **argv) {
+bool is_builtin_cmd(char *cmd) {
+    if (!strcmp(cmd, "quit") || !strcmp(cmd, "&") ||
+        !strcmp(cmd, "jobs") || !strcmp(cmd, "fg") ||
+        !strcmp(cmd, "bg")) {
+        return true;
+    }
+
+    return false;
+}
+
+void do_builtin_cmd(char **argv) {
     if (!strcmp(argv[0], "quit"))
         exit(0);
     if (!strcmp(argv[0], "&"))
-        return 1;
+        return;
     if (!strcmp(argv[0], "jobs")) {
         print_all_bg_jobs();
-        return 1;
+        return;
     }
     if (!strcmp(argv[0], "fg") || !strcmp(argv[0], "bg")) {
         if (argv[1] == NULL)
-            return 1;
+            return;
 
         int pid, jid;
         char *p;
@@ -81,7 +91,7 @@ int builtin_command(char **argv) {
             else
                 printf("PID %d", pid);
             printf(" not found.\n");
-            return 1;
+            return;
         }
 
         set_state(bg_job, Running);
@@ -92,10 +102,7 @@ int builtin_command(char **argv) {
             fg_job = *bg_job;
             waitpid(fg_job.pid, NULL, 0);
         }
-
-        return 1;
     }
-    return 0;
 }
 
 void eval_cmd(char *cmdline) {
@@ -108,8 +115,10 @@ void eval_cmd(char *cmdline) {
     if (argv[0] == NULL)
         return; // Ignore empty lines
 
-    if (builtin_command(argv))
+    if (is_builtin_cmd(argv[0])) {
+        do_builtin_cmd(argv);
         return;
+    }
 
     pid_t pid;
     if ((pid = fork()) == 0) { // Child runs user job
