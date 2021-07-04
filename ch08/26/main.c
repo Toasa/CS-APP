@@ -4,6 +4,7 @@
 #define MAXARGS 128
 
 extern char **environ;
+static int bg_jid;
 
 char *copy_cmd(char *cmd) {
     int len = strlen(cmd);
@@ -55,8 +56,7 @@ int builtin_command(char **argv) {
     if (!strcmp(argv[0], "&"))
         return 1;
     if (!strcmp(argv[0], "jobs")) {
-        // TODO: List all background jobs
-        printf("[%d] %d %s", bg_job.jid, bg_job.pid, bg_job.cmd);
+        print_all_bg_jobs();
         return 1;
     }
     if (!strcmp(argv[0], "bg")) {
@@ -67,9 +67,7 @@ int builtin_command(char **argv) {
         char *p;
         if ((p = strchr(argv[1], '%')) != NULL) {
             int jid = atoi(p+1);
-            if (bg_job.jid != jid)
-                return 1;
-            pid = bg_job.pid;
+            pid = get_bg_pid(jid);
         } else {
             pid = atoi(argv[1]);
         }
@@ -117,8 +115,9 @@ void eval(char *cmdline) {
 
     // Background job
     if (bg || WIFSTOPPED(status)) {
-        bg_job = job;
-        printf("[%d] %d %s", job.jid, job.pid, cmdline);
+        job = fg_to_bg(job);
+        register_new_bg_job(job);
+        printf("[%d] %d %s", job.bg_jid, job.pid, cmdline);
     }
 }
 
