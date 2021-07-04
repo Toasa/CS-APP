@@ -17,8 +17,6 @@ extern struct Job fg_job;
 
 struct Job create_new_job(pid_t pid, char *cmd);
 
-pid_t get_fg_pid();
-
 int register_new_bg_job(struct Job);
 
 struct Job fg_to_bg(struct Job j);

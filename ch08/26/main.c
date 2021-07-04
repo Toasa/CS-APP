@@ -107,7 +107,7 @@ void eval(char *cmdline) {
     // Parent waits for foreground job to terminate
     if (!bg) {
         fg_job = job;
-        if (waitpid(get_fg_pid(), &status, WUNTRACED) < 0) {
+        if (waitpid(fg_job.pid, &status, WUNTRACED) < 0) {
             fprintf(stderr, "waitfg: waitpid error");
             exit(1);
         }

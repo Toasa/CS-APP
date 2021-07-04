@@ -15,10 +15,6 @@ struct Job create_new_job(pid_t pid, char *cmd) {
     return j;
 }
 
-pid_t get_fg_pid() {
-    return fg_job.pid;
-}
-
 int register_new_bg_job(struct Job j) {
     bool registered = false;
     // Find empty entry
