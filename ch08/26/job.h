@@ -6,9 +6,17 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+enum State {
+    Running,
+    Stopped,
+    Exited,
+};
+
 struct Job {
     int pid; // Process id
     int bg_jid; // Background Job id
+
+    enum State state;
 
     char *cmd;
 };
@@ -21,7 +29,9 @@ int register_new_bg_job(struct Job);
 
 struct Job fg_to_bg(struct Job j);
 
-void print_all_bg_jobs();
-
 // Find a job which has jid and return its pid.
 pid_t get_bg_pid(int jid);
+
+void set_state(struct Job *j, enum State s);
+
+void print_all_bg_jobs();

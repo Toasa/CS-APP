@@ -115,6 +115,8 @@ void eval(char *cmdline) {
 
     // Background job
     if (bg || WIFSTOPPED(status)) {
+        if (WIFSTOPPED(status))
+            set_state(&job, Stopped);
         job = fg_to_bg(job);
         register_new_bg_job(job);
         printf("[%d] %d %s", job.bg_jid, job.pid, cmdline);

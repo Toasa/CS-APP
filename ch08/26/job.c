@@ -10,6 +10,7 @@ struct Job create_new_job(pid_t pid, char *cmd) {
     struct Job j =  {
         .pid = pid,
         .bg_jid = -1,
+        .state = Running,
         .cmd = cmd,
     };
     return j;
@@ -42,12 +43,22 @@ struct Job fg_to_bg(struct Job j) {
     return j;
 }
 
+static char *str_state(enum State s) {
+    if (s == Running)
+        return "Running";
+    else if (s == Stopped)
+        return "Stopped";
+    else
+        return "Exited ";
+}
+
 void print_all_bg_jobs() {
     for (int i = 0; i < MAX_BG_JOB; i++) {
         if (bg_jobs_used[i])
-            printf("[%d] %d %s",
+            printf("[%d] %d %s %s",
                     bg_jobs[i].bg_jid,
                     bg_jobs[i].pid,
+                    str_state(bg_jobs[i].state),
                     bg_jobs[i].cmd);
     }
 }
@@ -58,4 +69,8 @@ pid_t get_bg_pid(int jid) {
             return bg_jobs[i].pid;
     }
     return -1;
+}
+
+void set_state(struct Job *j, enum State s) {
+    j->state = s;
 }
