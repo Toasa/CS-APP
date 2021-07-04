@@ -81,6 +81,7 @@ int builtin_command(char **argv) {
             else
                 printf("PID %d", pid);
             printf(" not found.\n");
+            return 1;
         }
 
         set_state(bg_job, Running);
