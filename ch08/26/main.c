@@ -59,7 +59,7 @@ int builtin_command(char **argv) {
         print_all_bg_jobs();
         return 1;
     }
-    if (!strcmp(argv[0], "bg")) {
+    if (!strcmp(argv[0], "fg") || !strcmp(argv[0], "bg")) {
         if (argv[1] == NULL)
             return 1;
 
@@ -85,6 +85,12 @@ int builtin_command(char **argv) {
 
         set_state(bg_job, Running);
         killpg(pid, SIGCONT);
+
+        // Wait job if fg
+        if (!strcmp(argv[0], "fg")) {
+            fg_job = *bg_job;
+            waitpid(fg_job.pid, NULL, 0);
+        }
 
         return 1;
     }
