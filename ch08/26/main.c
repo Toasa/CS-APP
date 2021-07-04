@@ -63,15 +63,29 @@ int builtin_command(char **argv) {
         if (argv[1] == NULL)
             return 1;
 
-        int pid;
+        int pid, jid;
         char *p;
+        bool jid_specified = false;
         if ((p = strchr(argv[1], '%')) != NULL) {
-            int jid = atoi(p+1);
+            jid_specified = true;
+            jid = atoi(p+1);
             pid = get_bg_pid(jid);
         } else {
             pid = atoi(argv[1]);
         }
+
+        struct Job *bg_job = get_bg_job_from_pid(pid);
+        if (bg_job == NULL) {
+            if (jid_specified)
+                printf("Job %d", jid);
+            else
+                printf("PID %d", pid);
+            printf(" not found.\n");
+        }
+
+        set_state(bg_job, Running);
         killpg(pid, SIGCONT);
+
         return 1;
     }
     return 0;

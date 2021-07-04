@@ -69,6 +69,14 @@ pid_t get_bg_pid(int jid) {
     return -1;
 }
 
+struct Job *get_bg_job_from_pid(pid_t pid) {
+    for (int i = 0; i < MAX_BG_JOB; i++) {
+        if (bg_jobs[i].pid == pid)
+            return &bg_jobs[i];
+    }
+    return NULL;
+}
+
 void set_state(struct Job *j, enum State s) {
     j->state = s;
 }

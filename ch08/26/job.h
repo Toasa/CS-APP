@@ -34,6 +34,8 @@ struct Job fg_to_bg(struct Job j);
 // Find a job which has jid and return its pid.
 pid_t get_bg_pid(int jid);
 
+struct Job *get_bg_job_from_pid(pid_t pid);
+
 void set_state(struct Job *j, enum State s);
 
 void print_all_bg_jobs();
