@@ -121,6 +121,9 @@ void eval(char *cmdline) {
         register_new_bg_job(job);
         printf("[%d] %d %s", job.bg_jid, job.pid, cmdline);
     }
+
+    // TODO: Add this checking in early return
+    check_exited_bg_jobs();
 }
 
 int main() {

@@ -27,6 +27,8 @@ struct Job create_new_job(pid_t pid, char *cmd);
 
 int register_new_bg_job(struct Job);
 
+void check_exited_bg_jobs();
+
 struct Job fg_to_bg(struct Job j);
 
 // Find a job which has jid and return its pid.

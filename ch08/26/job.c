@@ -36,11 +36,41 @@ int register_new_bg_job(struct Job j) {
     return 0;
 }
 
+void check_exited_bg_jobs() {
+    for (int i = 0; i < MAX_BG_JOB; i++) {
+        struct Job bg_job = bg_jobs[i];
+        pid_t pid = bg_job.pid;
+
+        int status;
+        waitpid(pid, &status, WNOHANG|WUNTRACED);
+
+        if (!bg_jobs_used[i])
+            continue;
+
+        if (WIFEXITED(status)) {
+            set_state(&bg_job, Stopped);
+            bg_jobs_used[i] = false;
+        }
+    }
+}
+
 struct Job fg_to_bg(struct Job j) {
     static int bg_jid = 0;
 
     j.bg_jid = bg_jid++;
     return j;
+}
+
+pid_t get_bg_pid(int jid) {
+    for (int i = 0; i < MAX_BG_JOB; i++) {
+        if (bg_jobs[i].bg_jid == jid)
+            return bg_jobs[i].pid;
+    }
+    return -1;
+}
+
+void set_state(struct Job *j, enum State s) {
+    j->state = s;
 }
 
 static char *str_state(enum State s) {
@@ -61,16 +91,4 @@ void print_all_bg_jobs() {
                     str_state(bg_jobs[i].state),
                     bg_jobs[i].cmd);
     }
-}
-
-pid_t get_bg_pid(int jid) {
-    for (int i = 0; i < MAX_BG_JOB; i++) {
-        if (bg_jobs[i].bg_jid == jid)
-            return bg_jobs[i].pid;
-    }
-    return -1;
-}
-
-void set_state(struct Job *j, enum State s) {
-    j->state = s;
 }
