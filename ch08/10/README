@@ -1,0 +1,3 @@
+A: fork
+B: longjump, execve
+C: setjmp
