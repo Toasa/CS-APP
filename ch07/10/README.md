@@ -1,0 +1,3 @@
+- A: `gcc p.o libx.a p.o`
+- B: `p.o libx.a liby.a libx.a`
+- C: `p.o libx.a liby.a libx.a libz.a`
