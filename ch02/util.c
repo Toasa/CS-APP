@@ -1,5 +1,6 @@
 #include <limits.h>
 #include <stdio.h>
+#include "util.h"
 
 void printb(unsigned int v) {
   unsigned int mask = (int)1 << (sizeof(v) * CHAR_BIT - 1);
