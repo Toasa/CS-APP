@@ -2,15 +2,16 @@
 #include <float.h>
 #include <math.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
 
 typedef unsigned float_bits;
 
-float_bits f2u(float f) {
-    return *(float_bits *)&f;
-}
-
-float u2f(float_bits u) {
-    return *(float *)&u;
+float float_twice_f(float f) {
+    if (isnan(f))
+        return f;
+    else
+        return f * 2.0;
 }
 
 // Compute 2*f. If f is NaN, then return f.
@@ -44,8 +45,24 @@ float_bits float_twice(float_bits f) {
 }
 
 int main() {
-    assert(u2f(float_twice(f2u(1.0)))     == 1.0 * 2);
-    assert(u2f(float_twice(f2u(2.0)))     == 2.0 * 2);
-    assert(u2f(float_twice(f2u(123.0)))   == 123.0 * 2);
-    assert(u2f(float_twice(f2u(FLT_MAX))) == INFINITY);
+    uint64_t bad = 0;
+    uint64_t good = 0;
+
+    unsigned x = 0;
+
+    do {
+        float *fp = (float *)&x;
+        float f = float_twice_f(*fp);
+        float_bits fb = float_twice(x);
+
+        unsigned *ff = (unsigned *)&f;
+        if (*ff != fb) {
+            bad++;
+            printf("%f (%.8x): %.8x != %.8x\n", *fp, x, fb, *ff);
+        } else {
+            good++;
+        }
+    } while (++x);
+
+    printf("good=%lu, bad=%lu\n", good, bad);
 }
